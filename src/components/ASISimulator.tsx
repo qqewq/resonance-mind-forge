@@ -23,7 +23,7 @@ const ASISimulator: React.FC = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [simulationTime, setSimulationTime] = useState(0);
   const [parameters, setParameters] = useState<SimulationParameters>({
-    alpha: 0.1,
+    alpha: 1.0,
     delta: 0.05,
     agentCount: 8,
     ethicalThreshold: 0.8,
@@ -149,7 +149,7 @@ const ASISimulator: React.FC = () => {
                   value={[parameters.alpha]}
                   onValueChange={([value]) => setParameters(prev => ({ ...prev, alpha: value }))}
                   min={0.01}
-                  max={0.5}
+                  max={1.5}
                   step={0.01}
                   className="mt-2"
                 />
