@@ -52,6 +52,12 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				// AI/Sci-fi design system
+				neural: 'hsl(var(--neural))',
+				quantum: 'hsl(var(--quantum))',
+				resonance: 'hsl(var(--resonance))',
+				energy: 'hsl(var(--energy))',
+				warning: 'hsl(var(--warning))',
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
@@ -84,11 +90,42 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'pulse-glow': {
+					'0%, 100%': { boxShadow: '0 0 5px hsl(var(--resonance) / 0.3)' },
+					'50%': { boxShadow: '0 0 25px hsl(var(--resonance) / 0.6), 0 0 35px hsl(var(--resonance) / 0.4)' }
+				},
+				'neural-flow': {
+					'0%': { backgroundPosition: '0% 50%' },
+					'50%': { backgroundPosition: '100% 50%' },
+					'100%': { backgroundPosition: '0% 50%' }
+				},
+				'float': {
+					'0%, 100%': { transform: 'translateY(0px)' },
+					'50%': { transform: 'translateY(-10px)' }
+				},
+				'resonance-wave': {
+					'0%': { transform: 'scale(1)', opacity: '1' },
+					'100%': { transform: 'scale(2)', opacity: '0' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
+				'neural-flow': 'neural-flow 3s ease-in-out infinite',
+				'float': 'float 3s ease-in-out infinite',
+				'resonance-wave': 'resonance-wave 1.5s ease-out infinite'
+			},
+			backgroundImage: {
+				'gradient-neural': 'var(--gradient-neural)',
+				'gradient-resonance': 'var(--gradient-resonance)',
+				'gradient-cosmic': 'var(--gradient-cosmic)'
+			},
+			boxShadow: {
+				'neural': 'var(--glow-neural)',
+				'resonance': 'var(--glow-resonance)',
+				'quantum': 'var(--glow-quantum)'
 			}
 		}
 	},
