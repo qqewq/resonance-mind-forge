@@ -21,6 +21,7 @@ interface SimulationParameters {
 
 const ASISimulator: React.FC = () => {
   const [isRunning, setIsRunning] = useState(false);
+  const [is10xAccelerated, setIs10xAccelerated] = useState(false);
   const [simulationTime, setSimulationTime] = useState(0);
   const [parameters, setParameters] = useState<SimulationParameters>({
     alpha: 1.0,
@@ -42,13 +43,16 @@ const ASISimulator: React.FC = () => {
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isRunning) {
+      const timeStep = is10xAccelerated ? 1.0 : 0.1;
+      const intervalTime = is10xAccelerated ? 10 : 100;
+      
       interval = setInterval(() => {
-        setSimulationTime(prev => prev + 0.1);
+        setSimulationTime(prev => prev + timeStep);
         updateMetrics();
-      }, 100);
+      }, intervalTime);
     }
     return () => clearInterval(interval);
-  }, [isRunning, parameters]);
+  }, [isRunning, is10xAccelerated, parameters]);
 
   const updateMetrics = () => {
     setMetrics(prev => {
@@ -193,6 +197,13 @@ const ASISimulator: React.FC = () => {
                   className="bg-gradient-resonance hover:shadow-resonance"
                 >
                   {isRunning ? 'Остановить' : 'Запустить'}
+                </Button>
+                <Button 
+                  variant={is10xAccelerated ? "default" : "outline"}
+                  onClick={() => setIs10xAccelerated(!is10xAccelerated)}
+                  className={is10xAccelerated ? "bg-gradient-energy text-white" : ""}
+                >
+                  Ускорение 10x
                 </Button>
                 <Button variant="outline" onClick={resetSimulation}>
                   Сброс
