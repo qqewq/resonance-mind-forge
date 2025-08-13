@@ -107,6 +107,10 @@ export default {
 				'resonance-wave': {
 					'0%': { transform: 'scale(1)', opacity: '1' },
 					'100%': { transform: 'scale(2)', opacity: '0' }
+				},
+				'fade-in': {
+					'0%': { opacity: '0', transform: 'translateY(10px)' },
+					'100%': { opacity: '1', transform: 'translateY(0)' }
 				}
 			},
 			animation: {
@@ -115,12 +119,15 @@ export default {
 				'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
 				'neural-flow': 'neural-flow 3s ease-in-out infinite',
 				'float': 'float 3s ease-in-out infinite',
-				'resonance-wave': 'resonance-wave 1.5s ease-out infinite'
+				'resonance-wave': 'resonance-wave 1.5s ease-out infinite',
+				'fade-in': 'fade-in 0.3s ease-out'
 			},
 			backgroundImage: {
 				'gradient-neural': 'var(--gradient-neural)',
 				'gradient-resonance': 'var(--gradient-resonance)',
-				'gradient-cosmic': 'var(--gradient-cosmic)'
+				'gradient-cosmic': 'var(--gradient-cosmic)',
+				'gradient-energy': 'var(--gradient-energy)',
+				'gradient-quantum': 'var(--gradient-quantum)'
 			},
 			boxShadow: {
 				'neural': 'var(--glow-neural)',

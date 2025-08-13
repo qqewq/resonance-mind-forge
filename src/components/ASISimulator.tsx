@@ -5,7 +5,8 @@ import { Slider } from '@/components/ui/slider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Brain, Zap, Atom, Network, Shield, TrendingUp, Activity, Cpu } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Brain, Zap, Atom, Network, Shield, TrendingUp, Activity, Cpu, Settings, RotateCcw, FastForward, Target, Eye, Play } from 'lucide-react';
 import IntelligenceGrowthChart from './IntelligenceGrowthChart';
 import ResonanceVisualization from './ResonanceVisualization';
 import AgentNetwork from './AgentNetwork';
@@ -17,6 +18,14 @@ interface SimulationParameters {
   agentCount: number;
   ethicalThreshold: number;
   resonanceStrength: number;
+  parameterN: number;
+}
+
+interface InteractiveState {
+  showFormulas: boolean;
+  isExponentialMode: boolean;
+  isCriticalMass: boolean;
+  parameterN: number;
 }
 
 const ASISimulator: React.FC = () => {
@@ -24,11 +33,19 @@ const ASISimulator: React.FC = () => {
   const [is10xAccelerated, setIs10xAccelerated] = useState(false);
   const [simulationTime, setSimulationTime] = useState(0);
   const [parameters, setParameters] = useState<SimulationParameters>({
-    alpha: 1.0,
-    delta: 0.05,
-    agentCount: 8,
+    alpha: 0.44,
+    delta: 0.17,
+    agentCount: 13,
     ethicalThreshold: 0.8,
-    resonanceStrength: 1.2
+    resonanceStrength: 1.2,
+    parameterN: 13
+  });
+
+  const [interactiveState, setInteractiveState] = useState<InteractiveState>({
+    showFormulas: true,
+    isExponentialMode: false,
+    isCriticalMass: false,
+    parameterN: 13
   });
 
   const [metrics, setMetrics] = useState({
@@ -109,6 +126,64 @@ const ASISimulator: React.FC = () => {
       asiProgress: 0
     });
   };
+
+  // Interactive functions
+  const resetParameters = () => {
+    setParameters({
+      alpha: 0.44,
+      delta: 0.17,
+      agentCount: 13,
+      ethicalThreshold: 0.8,
+      resonanceStrength: 1.2,
+      parameterN: 13
+    });
+    setInteractiveState(prev => ({ ...prev, parameterN: 13 }));
+  };
+
+  const setExponentialMode = () => {
+    setParameters(prev => ({ ...prev, alpha: 0.9, delta: 0.4 }));
+    setInteractiveState(prev => ({ ...prev, isExponentialMode: true }));
+    setTimeout(() => {
+      setInteractiveState(prev => ({ ...prev, isExponentialMode: false }));
+    }, 30000);
+  };
+
+  const setCriticalMass = () => {
+    setParameters(prev => ({ ...prev, agentCount: 25 }));
+    setInteractiveState(prev => ({ ...prev, isCriticalMass: true, parameterN: 25 }));
+  };
+
+  const toggleFormulas = () => {
+    setInteractiveState(prev => ({ ...prev, showFormulas: !prev.showFormulas }));
+  };
+
+  // Calculations
+  const calculateComplexity = (n: number) => ({
+    traditional: Math.pow(2, n),
+    hybrid: n * n,
+    acceleration: Math.pow(2, n) / (n * n),
+    timeSaved: (1 - (n * n) / Math.pow(2, n)) * 100
+  });
+
+  const calculateResonance = () => {
+    return (parameters.resonanceStrength * parameters.alpha).toFixed(3);
+  };
+
+  const calculateASITime = () => {
+    const { alpha, delta } = parameters;
+    const I_ASI = 1000; // Target ASI intelligence
+    const I_0 = 1.0;
+    const Q_0 = 100;
+    return (1 / alpha) * Math.log((alpha * (I_ASI - I_0)) / (delta * Q_0) + 1);
+  };
+
+  const getEfficiencyColor = (acceleration: number) => {
+    if (acceleration > 50) return 'bg-green-500/20 border-green-500';
+    if (acceleration > 10) return 'bg-yellow-500/20 border-yellow-500';
+    return 'bg-red-500/20 border-red-500';
+  };
+
+  const complexity = calculateComplexity(interactiveState.parameterN);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -266,6 +341,233 @@ const ASISimulator: React.FC = () => {
           </Card>
         </div>
 
+        {/* Interactive Controls Panel */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+          {/* Left Column - Parameter Controls */}
+          <div className="lg:col-span-2 space-y-6">
+            <Card className={`border-border transition-all duration-300 ${getEfficiencyColor(complexity.acceleration)}`}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings className="h-5 w-5 text-neural" />
+                  Интерактивные Параметры
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Parameter N Slider */}
+                <div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <label className="text-sm font-medium text-muted-foreground cursor-help">
+                        Количество параметров (n): {interactiveState.parameterN}
+                      </label>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Управляет сложностью алгоритма. Показывает преимущества гибридного подхода</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <Slider
+                    value={[interactiveState.parameterN]}
+                    onValueChange={([value]) => {
+                      setInteractiveState(prev => ({ ...prev, parameterN: value }));
+                      setParameters(prev => ({ ...prev, parameterN: value }));
+                    }}
+                    min={5}
+                    max={30}
+                    step={1}
+                    className="mt-2"
+                  />
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Базовый: {complexity.traditional.toLocaleString()} операций vs Гибридный: {complexity.hybrid.toLocaleString()} операций
+                  </div>
+                </div>
+
+                {/* Alpha Slider */}
+                <div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <label className="text-sm font-medium text-muted-foreground cursor-help">
+                        Коэффициент роста (α): {parameters.alpha.toFixed(2)}
+                      </label>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Контролирует экспоненциальный рост интеллекта</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <Slider
+                    value={[parameters.alpha]}
+                    onValueChange={([value]) => setParameters(prev => ({ ...prev, alpha: value }))}
+                    min={0.1}
+                    max={0.9}
+                    step={0.01}
+                    className="mt-2"
+                  />
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Резонанс: {calculateResonance()} | ASI время: {calculateASITime().toFixed(1)}s
+                  </div>
+                  <div className="text-xs text-quantum mt-1">
+                    ω_рез = β·α = {parameters.resonanceStrength}·{parameters.alpha.toFixed(2)}
+                  </div>
+                </div>
+
+                {/* Delta Slider */}
+                <div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <label className="text-sm font-medium text-muted-foreground cursor-help">
+                        Эффективность (δ): {parameters.delta.toFixed(2)}
+                      </label>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Влияет на эффективность преобразования гипотез в интеллект</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <Slider
+                    value={[parameters.delta]}
+                    onValueChange={([value]) => setParameters(prev => ({ ...prev, delta: value }))}
+                    min={0.05}
+                    max={0.5}
+                    step={0.01}
+                    className="mt-2"
+                  />
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Эффективность: {(parameters.delta * 100).toFixed(0)}%
+                  </div>
+                  <div className="text-xs text-neural mt-1">
+                    I(t) = I₀ + (δ·Q₀/α)·(e^(α·t) - 1)
+                  </div>
+                </div>
+
+                {/* Agent Count Slider */}
+                <div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <label className="text-sm font-medium text-muted-foreground cursor-help">
+                        Количество агентов: {parameters.agentCount}
+                      </label>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Количество ИИ-агентов в сети. При &gt;25 достигается критическая масса</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <Slider
+                    value={[parameters.agentCount]}
+                    onValueChange={([value]) => setParameters(prev => ({ ...prev, agentCount: value }))}
+                    min={5}
+                    max={30}
+                    step={1}
+                    className="mt-2"
+                  />
+                  {parameters.agentCount > 25 && (
+                    <Badge className="mt-2 bg-gradient-resonance text-white animate-pulse-glow">
+                      Критическая масса достигнута!
+                    </Badge>
+                  )}
+                  <div className="text-xs text-muted-foreground mt-1">
+                    I_эм = ΣI_i + Σγ_ij·I_i·I_j
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right Column - Control Buttons & Status */}
+          <div className="space-y-6">
+            <Card className="border-border bg-card/50 backdrop-blur">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="h-5 w-5 text-energy" />
+                  Режимы Управления
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button
+                  onClick={resetParameters}
+                  variant="outline"
+                  className="w-full flex items-center gap-2"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                  Сброс параметров
+                </Button>
+                
+                <Button
+                  onClick={setExponentialMode}
+                  variant={interactiveState.isExponentialMode ? "default" : "outline"}
+                  className="w-full flex items-center gap-2 bg-gradient-energy"
+                >
+                  <FastForward className="h-4 w-4" />
+                  Экспоненциальный режим
+                </Button>
+
+                <Button
+                  onClick={setCriticalMass}
+                  variant={interactiveState.isCriticalMass ? "default" : "outline"}
+                  className="w-full flex items-center gap-2 bg-gradient-resonance"
+                >
+                  <Target className="h-4 w-4" />
+                  Критическая масса
+                </Button>
+
+                <Button
+                  onClick={toggleFormulas}
+                  variant={interactiveState.showFormulas ? "default" : "outline"}
+                  className="w-full flex items-center gap-2"
+                >
+                  <Eye className="h-4 w-4" />
+                  {interactiveState.showFormulas ? 'Скрыть' : 'Показать'} формулы
+                </Button>
+
+                <Button
+                  onClick={() => {
+                    // Start dynamic comparison animation
+                    setIsRunning(true);
+                    setIs10xAccelerated(true);
+                  }}
+                  variant="outline"
+                  className="w-full flex items-center gap-2 bg-gradient-quantum"
+                >
+                  <Play className="h-4 w-4" />
+                  Сравнение в динамике
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Status Card */}
+            <Card className={`border-border transition-all duration-300 ${getEfficiencyColor(complexity.acceleration)}`}>
+              <CardHeader>
+                <CardTitle className="text-lg">Эффективность</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Ускорение:</span>
+                    <span className="font-bold text-energy">{complexity.acceleration.toFixed(0)}x</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Экономия времени:</span>
+                    <span className="font-bold text-resonance">{complexity.timeSaved.toFixed(1)}%</span>
+                  </div>
+                  <Progress value={Math.min(100, complexity.acceleration / 100 * 100)} className="mt-2" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Status Line */}
+        <div className="mb-8">
+          <Card className="border-border bg-gradient-to-r from-card/50 to-muted/20">
+            <CardContent className="p-4">
+              <p className="text-center text-lg">
+                При n={interactiveState.parameterN} гибридный алгоритм в{' '}
+                <span className="font-bold text-energy">{complexity.acceleration.toFixed(0)}x</span>{' '}
+                раз эффективнее, экономя{' '}
+                <span className="font-bold text-resonance">{complexity.timeSaved.toFixed(1)}%</span>{' '}
+                времени вычислений
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Main Visualization Tabs */}
         <Tabs defaultValue="growth" className="space-y-6">
           <TabsList className="grid w-full grid-cols-4 bg-muted/50">
@@ -321,42 +623,56 @@ const ASISimulator: React.FC = () => {
         </Tabs>
 
         {/* Mathematical Formulas */}
-        <Card className="mt-8 border-border bg-gradient-to-r from-card/50 to-muted/20">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Atom className="h-5 w-5 text-resonance" />
-              Математические Основы
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <h4 className="font-semibold text-neural mb-2">Рост Интеллекта:</h4>
-                <code className="bg-muted/50 p-2 rounded text-sm block">
-                  I(t) = I₀ + (δQ₀/α)(e^(αt) - 1)
-                </code>
+        {interactiveState.showFormulas && (
+          <Card className="mt-8 border-border bg-gradient-to-r from-card/50 to-muted/20 animate-fade-in">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Atom className="h-5 w-5 text-resonance" />
+                Математические Основы
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="font-semibold text-neural mb-2">Рост Интеллекта:</h4>
+                  <code className="bg-muted/50 p-2 rounded text-sm block">
+                    I(t) = I₀ + (δQ₀/α)(e^(αt) - 1)
+                  </code>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-quantum mb-2">Резонансная Частота:</h4>
+                  <code className="bg-muted/50 p-2 rounded text-sm block">
+                    ω = (1/D) × Σ(qₖ/mₖ)
+                  </code>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-resonance mb-2">Рост Гипотез:</h4>
+                  <code className="bg-muted/50 p-2 rounded text-sm block">
+                    Q(t) = Q₀ × e^(αt)
+                  </code>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-energy mb-2">Сложность:</h4>
+                  <code className="bg-muted/50 p-2 rounded text-sm block">
+                    O(2^n) → O(n²)
+                  </code>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-warning mb-2">Эмерджентность:</h4>
+                  <code className="bg-muted/50 p-2 rounded text-sm block">
+                    I_эм = ΣI_i + Σγ_ij·I_i·I_j
+                  </code>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-resonance mb-2">Время достижения ASI:</h4>
+                  <code className="bg-muted/50 p-2 rounded text-sm block">
+                    T = (1/α)·ln((α·(I_ASI-I₀))/(δ·Q₀) + 1)
+                  </code>
+                </div>
               </div>
-              <div>
-                <h4 className="font-semibold text-quantum mb-2">Резонансная Частота:</h4>
-                <code className="bg-muted/50 p-2 rounded text-sm block">
-                  ω = (1/D) × Σ(qₖ/mₖ)
-                </code>
-              </div>
-              <div>
-                <h4 className="font-semibold text-resonance mb-2">Рост Гипотез:</h4>
-                <code className="bg-muted/50 p-2 rounded text-sm block">
-                  Q(t) = Q₀ × e^(αt)
-                </code>
-              </div>
-              <div>
-                <h4 className="font-semibold text-energy mb-2">Сложность:</h4>
-                <code className="bg-muted/50 p-2 rounded text-sm block">
-                  O(2^n) → O(n²)
-                </code>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
