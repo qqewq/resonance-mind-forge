@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { Brain, Zap, Atom, Network, Shield, TrendingUp, Activity, Cpu, Settings, RotateCcw, FastForward, Target, Eye, Play } from 'lucide-react';
+import { Brain, Zap, Atom, Network, Shield, TrendingUp, Activity, Cpu, Settings, RotateCcw, FastForward, Target, Eye, Play, Globe } from 'lucide-react';
 import IntelligenceGrowthChart from './IntelligenceGrowthChart';
 import ResonanceVisualization from './ResonanceVisualization';
 import AgentNetwork from './AgentNetwork';
@@ -28,10 +28,20 @@ interface InteractiveState {
   parameterN: number;
 }
 
+type LanguageMode = 'bilingual' | 'russian' | 'english';
+
+interface LanguageTexts {
+  [key: string]: {
+    ru: string;
+    en: string;
+  };
+}
+
 const ASISimulator: React.FC = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [is10xAccelerated, setIs10xAccelerated] = useState(false);
   const [simulationTime, setSimulationTime] = useState(0);
+  const [languageMode, setLanguageMode] = useState<LanguageMode>('bilingual');
   const [parameters, setParameters] = useState<SimulationParameters>({
     alpha: 0.44,
     delta: 0.17,
@@ -183,6 +193,102 @@ const ASISimulator: React.FC = () => {
     return 'bg-red-500/20 border-red-500';
   };
 
+  // Language system
+  const texts: LanguageTexts = {
+    title: { ru: 'Гибридный Резонансный Алгоритм', en: 'Hybrid Resonance Algorithm' },
+    subtitle: { ru: 'Симулятор достижимости ASI через математическое самосовершенствование', en: 'ASI Reachability Simulator via Mathematical Self-Improvement' },
+    asiAchieved: { ru: 'ASI Достигнут', en: 'ASI Achieved' },
+    inProgress: { ru: 'В процессе', en: 'In Progress' },
+    time: { ru: 'Время', en: 'Time' },
+    controlPanel: { ru: 'Панель Управления Симуляцией', en: 'Simulation Control Panel' },
+    growth: { ru: 'рост', en: 'growth' },
+    efficiency: { ru: 'эффективность', en: 'efficiency' },
+    agents: { ru: 'Агенты', en: 'Agents' },
+    ethics: { ru: 'Этика', en: 'Ethics' },
+    stop: { ru: 'Остановить', en: 'Stop' },
+    start: { ru: 'Запустить', en: 'Start' },
+    acceleration: { ru: 'Ускорение', en: 'Acceleration' },
+    reset: { ru: 'Сброс', en: 'Reset' },
+    intelligence: { ru: 'Интеллект', en: 'Intelligence' },
+    hypotheses: { ru: 'Гипотезы', en: 'Hypotheses' },
+    resonance: { ru: 'Резонанс', en: 'Resonance' },
+    asiProgress: { ru: 'ASI Прогресс', en: 'ASI Progress' },
+    interactiveParams: { ru: 'Интерактивные Параметры', en: 'Interactive Parameters' },
+    parameterCount: { ru: 'Количество параметров (n)', en: 'Number of parameters (n)' },
+    baseOperations: { ru: 'Базовый', en: 'Base' },
+    hybridOperations: { ru: 'Гибридный', en: 'Hybrid' },
+    operations: { ru: 'операций', en: 'operations' },
+    vs: { ru: 'vs', en: 'vs' },
+    growthCoeff: { ru: 'Коэффициент роста (α)', en: 'Growth coefficient (α)' },
+    asiTime: { ru: 'ASI время', en: 'ASI time' },
+    efficiencyParam: { ru: 'Эффективность (δ)', en: 'Efficiency (δ)' },
+    agentCount: { ru: 'Количество агентов', en: 'Number of agents' },
+    criticalMassAchieved: { ru: 'Критическая масса достигнута!', en: 'Critical mass achieved!' },
+    controlModes: { ru: 'Режимы Управления', en: 'Control Modes' },
+    resetParams: { ru: 'Сброс параметров', en: 'Reset parameters' },
+    exponentialMode: { ru: 'Экспоненциальный режим', en: 'Exponential mode' },
+    criticalMass: { ru: 'Критическая масса', en: 'Critical mass' },
+    hideFormulas: { ru: 'Скрыть формулы', en: 'Hide formulas' },
+    showFormulas: { ru: 'Показать формулы', en: 'Show formulas' },
+    dynamicComparison: { ru: 'Сравнение в динамике', en: 'Dynamic comparison' },
+    efficiencyTitle: { ru: 'Эффективность', en: 'Efficiency' },
+    timeSavings: { ru: 'Экономия времени', en: 'Time savings' },
+    statusText: { ru: 'При n={n} гибридный алгоритм в {acc}x раз эффективнее, экономя {save}% времени вычислений', 
+                 en: 'With n={n} the hybrid algorithm is {acc}x more efficient, saving {save}% of computation time' },
+    intelligenceGrowth: { ru: 'Рост Интеллекта', en: 'Intelligence Growth' },
+    agentNetwork: { ru: 'Сеть Агентов', en: 'Agent Network' },
+    complexity: { ru: 'Сложность', en: 'Complexity' },
+    mathFoundations: { ru: 'Математические Основы', en: 'Mathematical Foundations' },
+    intelligenceGrowthFormula: { ru: 'Рост Интеллекта', en: 'Intelligence Growth' },
+    resonanceFreq: { ru: 'Резонансная Частота', en: 'Resonance Frequency' },
+    hypothesesGrowth: { ru: 'Рост Гипотез', en: 'Hypothesis Growth' },
+    complexityFormula: { ru: 'Сложность', en: 'Complexity' },
+    emergence: { ru: 'Эмерджентность', en: 'Emergence' },
+    asiAchievementTime: { ru: 'Время достижения ASI', en: 'ASI Achievement Time' }
+  };
+
+  const getText = (key: string): string => {
+    const text = texts[key];
+    if (!text) return key;
+    
+    switch (languageMode) {
+      case 'russian': return text.ru;
+      case 'english': return text.en;
+      case 'bilingual': return `${text.ru} | ${text.en}`;
+      default: return `${text.ru} | ${text.en}`;
+    }
+  };
+
+  const getStatusText = (): string => {
+    const template = texts.statusText;
+    const ruText = template.ru
+      .replace('{n}', interactiveState.parameterN.toString())
+      .replace('{acc}', complexity.acceleration.toFixed(0))
+      .replace('{save}', complexity.timeSaved.toFixed(1));
+    const enText = template.en
+      .replace('{n}', interactiveState.parameterN.toString())
+      .replace('{acc}', complexity.acceleration.toFixed(0))
+      .replace('{save}', complexity.timeSaved.toFixed(1));
+    
+    switch (languageMode) {
+      case 'russian': return ruText;
+      case 'english': return enText;
+      case 'bilingual': return `${ruText} | ${enText}`;
+      default: return `${ruText} | ${enText}`;
+    }
+  };
+
+  const cycleLanguageMode = () => {
+    setLanguageMode(prev => {
+      switch (prev) {
+        case 'bilingual': return 'russian';
+        case 'russian': return 'english';
+        case 'english': return 'bilingual';
+        default: return 'bilingual';
+      }
+    });
+  };
+
   const complexity = calculateComplexity(interactiveState.parameterN);
 
   return (
@@ -193,18 +299,37 @@ const ASISimulator: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-4xl font-bold bg-gradient-neural bg-clip-text text-transparent">
-                Гибридный Резонансный Алгоритм
+                {languageMode === 'bilingual' ? (
+                  <>
+                    Гибридный Резонансный Алгоритм<br />
+                    <span className="text-3xl">Hybrid Resonance Algorithm</span>
+                  </>
+                ) : getText('title')}
               </h1>
               <p className="text-xl text-muted-foreground mt-2">
-                Симулятор достижимости ASI через математическое самосовершенствование
+                {languageMode === 'bilingual' ? (
+                  <>
+                    Симулятор достижимости ASI через математическое самосовершенствование<br />
+                    <span className="text-lg">ASI Reachability Simulator via Mathematical Self-Improvement</span>
+                  </>
+                ) : getText('subtitle')}
               </p>
             </div>
             <div className="flex items-center gap-4">
+              <Button 
+                onClick={cycleLanguageMode}
+                variant="ghost"
+                size="icon"
+                className="hover:bg-muted/50"
+                title={`Current: ${languageMode}`}
+              >
+                <Globe className="h-5 w-5" />
+              </Button>
               <Badge variant="outline" className="border-resonance text-resonance animate-pulse-glow">
-                {metrics.asiProgress > 50 ? 'ASI Достигнут' : 'В процессе'}
+                {metrics.asiProgress > 50 ? getText('asiAchieved') : getText('inProgress')}
               </Badge>
               <Badge variant="outline" className="border-neural text-neural">
-                Время: {simulationTime.toFixed(1)}s
+                {getText('time')}: {simulationTime.toFixed(1)}s
               </Badge>
             </div>
           </div>
@@ -217,13 +342,13 @@ const ASISimulator: React.FC = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Cpu className="h-5 w-5 text-neural" />
-              Панель Управления Симуляцией
+              {getText('controlPanel')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
               <div>
-                <label className="text-sm font-medium text-muted-foreground">α (рост): {parameters.alpha}</label>
+                <label className="text-sm font-medium text-muted-foreground">α ({getText('growth')}): {parameters.alpha}</label>
                 <Slider
                   value={[parameters.alpha]}
                   onValueChange={([value]) => setParameters(prev => ({ ...prev, alpha: value }))}
@@ -234,7 +359,7 @@ const ASISimulator: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-muted-foreground">δ (эффективность): {parameters.delta}</label>
+                <label className="text-sm font-medium text-muted-foreground">δ ({getText('efficiency')}): {parameters.delta}</label>
                 <Slider
                   value={[parameters.delta]}
                   onValueChange={([value]) => setParameters(prev => ({ ...prev, delta: value }))}
@@ -245,7 +370,7 @@ const ASISimulator: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Агенты: {parameters.agentCount}</label>
+                <label className="text-sm font-medium text-muted-foreground">{getText('agents')}: {parameters.agentCount}</label>
                 <Slider
                   value={[parameters.agentCount]}
                   onValueChange={([value]) => setParameters(prev => ({ ...prev, agentCount: value }))}
@@ -256,7 +381,7 @@ const ASISimulator: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Этика: {parameters.ethicalThreshold}</label>
+                <label className="text-sm font-medium text-muted-foreground">{getText('ethics')}: {parameters.ethicalThreshold}</label>
                 <Slider
                   value={[parameters.ethicalThreshold]}
                   onValueChange={([value]) => setParameters(prev => ({ ...prev, ethicalThreshold: value }))}
@@ -271,17 +396,17 @@ const ASISimulator: React.FC = () => {
                   onClick={toggleSimulation}
                   className="bg-gradient-resonance hover:shadow-resonance"
                 >
-                  {isRunning ? 'Остановить' : 'Запустить'}
+                  {isRunning ? getText('stop') : getText('start')}
                 </Button>
                 <Button 
                   variant={is10xAccelerated ? "default" : "outline"}
                   onClick={() => setIs10xAccelerated(!is10xAccelerated)}
                   className={is10xAccelerated ? "bg-gradient-energy text-white" : ""}
                 >
-                  Ускорение 10x
+                  {getText('acceleration')} 10x
                 </Button>
                 <Button variant="outline" onClick={resetSimulation}>
-                  Сброс
+                  {getText('reset')}
                 </Button>
               </div>
             </div>
@@ -294,7 +419,7 @@ const ASISimulator: React.FC = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Интеллект</p>
+                  <p className="text-sm text-muted-foreground">{getText('intelligence')}</p>
                   <p className="text-2xl font-bold text-neural">{metrics.intelligence.toFixed(2)}x</p>
                 </div>
                 <Brain className="h-8 w-8 text-neural" />
@@ -307,7 +432,7 @@ const ASISimulator: React.FC = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Гипотезы</p>
+                  <p className="text-sm text-muted-foreground">{getText('hypotheses')}</p>
                   <p className="text-2xl font-bold text-quantum">{Math.floor(metrics.hypotheses).toLocaleString()}</p>
                 </div>
                 <Zap className="h-8 w-8 text-quantum" />
@@ -319,7 +444,7 @@ const ASISimulator: React.FC = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Резонанс</p>
+                  <p className="text-sm text-muted-foreground">{getText('resonance')}</p>
                   <p className="text-2xl font-bold text-resonance">{metrics.resonancePoints}</p>
                 </div>
                 <Atom className="h-8 w-8 text-resonance" />
@@ -331,7 +456,7 @@ const ASISimulator: React.FC = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">ASI Прогресс</p>
+                  <p className="text-sm text-muted-foreground">{getText('asiProgress')}</p>
                   <p className="text-2xl font-bold text-energy">{metrics.asiProgress.toFixed(1)}%</p>
                 </div>
                 <TrendingUp className="h-8 w-8 text-energy" />
@@ -349,7 +474,7 @@ const ASISimulator: React.FC = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Settings className="h-5 w-5 text-neural" />
-                  Интерактивные Параметры
+                  {getText('interactiveParams')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -358,11 +483,11 @@ const ASISimulator: React.FC = () => {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <label className="text-sm font-medium text-muted-foreground cursor-help">
-                        Количество параметров (n): {interactiveState.parameterN}
+                        {getText('parameterCount')}: {interactiveState.parameterN}
                       </label>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>Управляет сложностью алгоритма. Показывает преимущества гибридного подхода</p>
+                      <p>Управляет сложностью алгоритма. Показывает преимущества гибридного подхода | Controls algorithm complexity. Shows hybrid approach advantages</p>
                     </TooltipContent>
                   </Tooltip>
                   <Slider
@@ -377,7 +502,7 @@ const ASISimulator: React.FC = () => {
                     className="mt-2"
                   />
                   <div className="text-xs text-muted-foreground mt-1">
-                    Базовый: {complexity.traditional.toLocaleString()} операций vs Гибридный: {complexity.hybrid.toLocaleString()} операций
+                    {getText('baseOperations')}: {complexity.traditional.toLocaleString()} {getText('operations')} {getText('vs')} {getText('hybridOperations')}: {complexity.hybrid.toLocaleString()} {getText('operations')}
                   </div>
                 </div>
 
@@ -386,11 +511,11 @@ const ASISimulator: React.FC = () => {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <label className="text-sm font-medium text-muted-foreground cursor-help">
-                        Коэффициент роста (α): {parameters.alpha.toFixed(2)}
+                        {getText('growthCoeff')}: {parameters.alpha.toFixed(2)}
                       </label>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>Контролирует экспоненциальный рост интеллекта</p>
+                      <p>Контролирует экспоненциальный рост интеллекта | Controls exponential intelligence growth</p>
                     </TooltipContent>
                   </Tooltip>
                   <Slider
@@ -402,7 +527,7 @@ const ASISimulator: React.FC = () => {
                     className="mt-2"
                   />
                   <div className="text-xs text-muted-foreground mt-1">
-                    Резонанс: {calculateResonance()} | ASI время: {calculateASITime().toFixed(1)}s
+                    {getText('resonance')}: {calculateResonance()} | {getText('asiTime')}: {calculateASITime().toFixed(1)}s
                   </div>
                   <div className="text-xs text-quantum mt-1">
                     ω_рез = β·α = {parameters.resonanceStrength}·{parameters.alpha.toFixed(2)}
@@ -414,11 +539,11 @@ const ASISimulator: React.FC = () => {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <label className="text-sm font-medium text-muted-foreground cursor-help">
-                        Эффективность (δ): {parameters.delta.toFixed(2)}
+                        {getText('efficiencyParam')}: {parameters.delta.toFixed(2)}
                       </label>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>Влияет на эффективность преобразования гипотез в интеллект</p>
+                      <p>Влияет на эффективность преобразования гипотез в интеллект | Affects efficiency of converting hypotheses to intelligence</p>
                     </TooltipContent>
                   </Tooltip>
                   <Slider
@@ -430,7 +555,7 @@ const ASISimulator: React.FC = () => {
                     className="mt-2"
                   />
                   <div className="text-xs text-muted-foreground mt-1">
-                    Эффективность: {(parameters.delta * 100).toFixed(0)}%
+                    {getText('efficiencyTitle')}: {(parameters.delta * 100).toFixed(0)}%
                   </div>
                   <div className="text-xs text-neural mt-1">
                     I(t) = I₀ + (δ·Q₀/α)·(e^(α·t) - 1)
@@ -442,11 +567,11 @@ const ASISimulator: React.FC = () => {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <label className="text-sm font-medium text-muted-foreground cursor-help">
-                        Количество агентов: {parameters.agentCount}
+                        {getText('agentCount')}: {parameters.agentCount}
                       </label>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>Количество ИИ-агентов в сети. При &gt;25 достигается критическая масса</p>
+                      <p>Количество ИИ-агентов в сети. При &gt;25 достигается критическая масса | Number of AI agents in network. Critical mass achieved at &gt;25</p>
                     </TooltipContent>
                   </Tooltip>
                   <Slider
@@ -459,7 +584,7 @@ const ASISimulator: React.FC = () => {
                   />
                   {parameters.agentCount > 25 && (
                     <Badge className="mt-2 bg-gradient-resonance text-white animate-pulse-glow">
-                      Критическая масса достигнута!
+                      {getText('criticalMassAchieved')}
                     </Badge>
                   )}
                   <div className="text-xs text-muted-foreground mt-1">
@@ -476,7 +601,7 @@ const ASISimulator: React.FC = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Target className="h-5 w-5 text-energy" />
-                  Режимы Управления
+                  {getText('controlModes')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -486,7 +611,7 @@ const ASISimulator: React.FC = () => {
                   className="w-full flex items-center gap-2"
                 >
                   <RotateCcw className="h-4 w-4" />
-                  Сброс параметров
+                  {getText('resetParams')}
                 </Button>
                 
                 <Button
@@ -495,7 +620,7 @@ const ASISimulator: React.FC = () => {
                   className="w-full flex items-center gap-2 bg-gradient-energy"
                 >
                   <FastForward className="h-4 w-4" />
-                  Экспоненциальный режим
+                  {getText('exponentialMode')}
                 </Button>
 
                 <Button
@@ -504,7 +629,7 @@ const ASISimulator: React.FC = () => {
                   className="w-full flex items-center gap-2 bg-gradient-resonance"
                 >
                   <Target className="h-4 w-4" />
-                  Критическая масса
+                  {getText('criticalMass')}
                 </Button>
 
                 <Button
@@ -513,7 +638,7 @@ const ASISimulator: React.FC = () => {
                   className="w-full flex items-center gap-2"
                 >
                   <Eye className="h-4 w-4" />
-                  {interactiveState.showFormulas ? 'Скрыть' : 'Показать'} формулы
+                  {interactiveState.showFormulas ? getText('hideFormulas') : getText('showFormulas')}
                 </Button>
 
                 <Button
@@ -526,7 +651,7 @@ const ASISimulator: React.FC = () => {
                   className="w-full flex items-center gap-2 bg-gradient-quantum"
                 >
                   <Play className="h-4 w-4" />
-                  Сравнение в динамике
+                  {getText('dynamicComparison')}
                 </Button>
               </CardContent>
             </Card>
@@ -534,16 +659,16 @@ const ASISimulator: React.FC = () => {
             {/* Status Card */}
             <Card className={`border-border transition-all duration-300 ${getEfficiencyColor(complexity.acceleration)}`}>
               <CardHeader>
-                <CardTitle className="text-lg">Эффективность</CardTitle>
+                <CardTitle className="text-lg">{getText('efficiencyTitle')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Ускорение:</span>
+                    <span className="text-sm text-muted-foreground">{getText('acceleration')}:</span>
                     <span className="font-bold text-energy">{complexity.acceleration.toFixed(0)}x</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Экономия времени:</span>
+                    <span className="text-sm text-muted-foreground">{getText('timeSavings')}:</span>
                     <span className="font-bold text-resonance">{complexity.timeSaved.toFixed(1)}%</span>
                   </div>
                   <Progress value={Math.min(100, complexity.acceleration / 100 * 100)} className="mt-2" />
@@ -558,11 +683,7 @@ const ASISimulator: React.FC = () => {
           <Card className="border-border bg-gradient-to-r from-card/50 to-muted/20">
             <CardContent className="p-4">
               <p className="text-center text-lg">
-                При n={interactiveState.parameterN} гибридный алгоритм в{' '}
-                <span className="font-bold text-energy">{complexity.acceleration.toFixed(0)}x</span>{' '}
-                раз эффективнее, экономя{' '}
-                <span className="font-bold text-resonance">{complexity.timeSaved.toFixed(1)}%</span>{' '}
-                времени вычислений
+                {getStatusText()}
               </p>
             </CardContent>
           </Card>
@@ -573,19 +694,19 @@ const ASISimulator: React.FC = () => {
           <TabsList className="grid w-full grid-cols-4 bg-muted/50">
             <TabsTrigger value="growth" className="data-[state=active]:bg-neural/20">
               <Activity className="h-4 w-4 mr-2" />
-              Рост Интеллекта
+              {getText('intelligenceGrowth')}
             </TabsTrigger>
             <TabsTrigger value="resonance" className="data-[state=active]:bg-resonance/20">
               <Atom className="h-4 w-4 mr-2" />
-              Резонанс
+              {getText('resonance')}
             </TabsTrigger>
             <TabsTrigger value="network" className="data-[state=active]:bg-quantum/20">
               <Network className="h-4 w-4 mr-2" />
-              Сеть Агентов
+              {getText('agentNetwork')}
             </TabsTrigger>
             <TabsTrigger value="complexity" className="data-[state=active]:bg-energy/20">
               <TrendingUp className="h-4 w-4 mr-2" />
-              Сложность
+              {getText('complexity')}
             </TabsTrigger>
           </TabsList>
 
@@ -628,43 +749,43 @@ const ASISimulator: React.FC = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Atom className="h-5 w-5 text-resonance" />
-                Математические Основы
+                {getText('mathFoundations')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <h4 className="font-semibold text-neural mb-2">Рост Интеллекта:</h4>
+                  <h4 className="font-semibold text-neural mb-2">{getText('intelligenceGrowthFormula')}:</h4>
                   <code className="bg-muted/50 p-2 rounded text-sm block">
                     I(t) = I₀ + (δQ₀/α)(e^(αt) - 1)
                   </code>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-quantum mb-2">Резонансная Частота:</h4>
+                  <h4 className="font-semibold text-quantum mb-2">{getText('resonanceFreq')}:</h4>
                   <code className="bg-muted/50 p-2 rounded text-sm block">
                     ω = (1/D) × Σ(qₖ/mₖ)
                   </code>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-resonance mb-2">Рост Гипотез:</h4>
+                  <h4 className="font-semibold text-resonance mb-2">{getText('hypothesesGrowth')}:</h4>
                   <code className="bg-muted/50 p-2 rounded text-sm block">
                     Q(t) = Q₀ × e^(αt)
                   </code>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-energy mb-2">Сложность:</h4>
+                  <h4 className="font-semibold text-energy mb-2">{getText('complexityFormula')}:</h4>
                   <code className="bg-muted/50 p-2 rounded text-sm block">
                     O(2^n) → O(n²)
                   </code>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-warning mb-2">Эмерджентность:</h4>
+                  <h4 className="font-semibold text-warning mb-2">{getText('emergence')}:</h4>
                   <code className="bg-muted/50 p-2 rounded text-sm block">
                     I_эм = ΣI_i + Σγ_ij·I_i·I_j
                   </code>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-resonance mb-2">Время достижения ASI:</h4>
+                  <h4 className="font-semibold text-resonance mb-2">{getText('asiAchievementTime')}:</h4>
                   <code className="bg-muted/50 p-2 rounded text-sm block">
                     T = (1/α)·ln((α·(I_ASI-I₀))/(δ·Q₀) + 1)
                   </code>
